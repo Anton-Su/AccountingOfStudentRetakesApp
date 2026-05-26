@@ -7,12 +7,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-
-
 import com.example.accountingofstudentretakesapp.data.remote.TokenManager
 import com.example.accountingofstudentretakesapp.data.repository.AuthRepositoryImpl
 import com.example.accountingofstudentretakesapp.domain.usecase.LoginUseCase
 import com.example.accountingofstudentretakesapp.presentation.model.Role
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
 import com.example.accountingofstudentretakesapp.presentation.ui.component.RoleSelector
 import kotlinx.coroutines.launch
 
@@ -43,14 +45,30 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
             value = email,
             onValueChange = { email = it },
             label = { Text("Email") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            trailingIcon = {
+                IconButton(onClick = { email = "" }) {
+                    Icon(
+                        imageVector = Icons.Filled.Clear,
+                        contentDescription = "Очистить email"
+                    )
+                }
+            }
         )
         Spacer(modifier = Modifier.height(8.dp))
         OutlinedTextField(
             value = password,
             onValueChange = { password = it },
             label = { Text("Password") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            trailingIcon = {
+                IconButton(onClick = { password = "" }) {
+                    Icon(
+                        imageVector = Icons.Filled.Clear,
+                        contentDescription = "Очистить пароль"
+                    )
+                }
+            }
         )
         Spacer(modifier = Modifier.height(24.dp))
         Button(
