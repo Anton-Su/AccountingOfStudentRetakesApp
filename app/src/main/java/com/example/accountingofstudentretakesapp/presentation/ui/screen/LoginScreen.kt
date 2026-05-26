@@ -12,14 +12,17 @@ import androidx.compose.ui.unit.dp
 import com.example.accountingofstudentretakesapp.data.remote.TokenManager
 import com.example.accountingofstudentretakesapp.data.repository.AuthRepositoryImpl
 import com.example.accountingofstudentretakesapp.domain.usecase.LoginUseCase
+import com.example.accountingofstudentretakesapp.presentation.model.Role
+import com.example.accountingofstudentretakesapp.presentation.ui.component.RoleSelector
 import kotlinx.coroutines.launch
 
 @Composable
 fun LoginScreen(onLoginSuccess: () -> Unit) {
-    var username by remember { mutableStateOf("user0") }
+    var email by remember { mutableStateOf("test@mail.ru") }
     var password by remember { mutableStateOf("emilyspass") }
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    var role by remember { mutableStateOf(Role.STUDENT) }
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     Column(
@@ -31,10 +34,15 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
     ) {
         Text("Вход в приложение", style = MaterialTheme.typography.headlineMedium)
         Spacer(modifier = Modifier.height(32.dp))
+        RoleSelector(
+            selectedRole = role,
+            onRoleSelected = { role = it }
+        )
+        Spacer(modifier = Modifier.height(8.dp))
         OutlinedTextField(
-            value = username,
-            onValueChange = { username = it },
-            label = { Text("Username") },
+            value = email,
+            onValueChange = { email = it },
+            label = { Text("Email") },
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(modifier = Modifier.height(8.dp))
@@ -52,10 +60,9 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
                 scope.launch {
                     val repository = AuthRepositoryImpl(TokenManager(context))
                     val loginUseCase = LoginUseCase(repository)
-                    loginUseCase(username, password)
+                    loginUseCase(email, password)
                         .onSuccess { onLoginSuccess() }
                         .onFailure { errorMessage = it.message }
-
                     isLoading = false
                 }
             },
