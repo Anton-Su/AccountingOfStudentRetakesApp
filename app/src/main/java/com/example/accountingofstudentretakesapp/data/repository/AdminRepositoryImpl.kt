@@ -26,6 +26,10 @@ class AdminRepositoryImpl : AdminRepository {
         return KtorClient.updateRetake(id, request)
     }
 
+    override suspend fun deleteRetake(id: Long) {
+        KtorClient.deleteRetake(id)
+    }
+
     override suspend fun getAllComments(): List<CommentDto> {
         return KtorClient.getAllComments()
     }

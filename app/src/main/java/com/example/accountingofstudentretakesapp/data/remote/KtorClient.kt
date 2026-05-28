@@ -119,6 +119,12 @@ object KtorClient {
         }.body()
     }
 
+    suspend fun deleteRetake(id: Long) {
+        client.delete("http://10.0.2.2:8080/api/admin/retakes/$id") {
+            contentType(ContentType.Application.Json)
+        }
+    }
+
     suspend fun getAllComments(): List<CommentDto> {
         return client.get("http://10.0.2.2:8080/api/admin/comments") {
             contentType(ContentType.Application.Json)

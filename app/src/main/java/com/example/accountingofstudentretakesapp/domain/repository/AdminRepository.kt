@@ -12,7 +12,9 @@ interface AdminRepository {
     suspend fun getSubjects(): List<SubjectDto>
     suspend fun createRetake(request: CreateRetakeRequestDto): CreateRetakeResponseDto
     suspend fun updateRetake(id: Long, request: CreateRetakeRequestDto): CreateRetakeResponseDto
+    suspend fun deleteRetake(id: Long)
     suspend fun getAllComments(): List<CommentDto>
     suspend fun getAllRetakes(): List<RetakeDetailDto>
+
 }
 
