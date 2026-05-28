@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.example.accountingofstudentretakesapp.domain.model.UserDto
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -121,6 +122,19 @@ class SettingsDataStore(private val context: Context) {
     suspend fun setPasswordHash(value: String) {
         context.dataStore.edit { prefs ->
             prefs[PASSWORD_HASH] = value
+        }
+    }
+
+    suspend fun saveUserProfile(user: UserDto) {
+        context.dataStore.edit { prefs ->
+            prefs[USER_ID] = user.id
+            prefs[ROLE] = user.role.name
+            prefs[FIRST_NAME] = user.firstName
+            prefs[SECOND_NAME] = user.secondName
+            prefs[LAST_NAME] = user.lastName
+            prefs[GENDER] = user.gender
+            prefs[AGE] = user.age
+            prefs[EMAIL] = user.email
         }
     }
 

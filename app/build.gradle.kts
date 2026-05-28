@@ -66,6 +66,7 @@ dependencies {
 
     implementation("io.coil-kt:coil-compose:2.4.0")
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.10.0")
     implementation("androidx.activity:activity-ktx:1.7.2")
     implementation("androidx.navigation:navigation-compose:2.9.1")
     implementation(libs.androidx.core.ktx)

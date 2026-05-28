@@ -1,34 +1,43 @@
 package com.example.accountingofstudentretakesapp.presentation.ui.screen
-import com.example.accountingofstudentretakesapp.R
+
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
-import com.example.accountingofstudentretakesapp.data.remote.TokenManager
-import com.example.accountingofstudentretakesapp.data.repository.AuthRepositoryImpl
-import com.example.accountingofstudentretakesapp.domain.usecase.LoginUseCase
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
+import com.example.accountingofstudentretakesapp.R
 import com.example.accountingofstudentretakesapp.presentation.model.UserRole
 import com.example.accountingofstudentretakesapp.presentation.ui.component.RoleSelector
-import kotlinx.coroutines.launch
+import com.example.accountingofstudentretakesapp.presentation.viewmodel.RetakeViewModel
 
 @Composable
-fun LoginScreen(onLoginSuccess: () -> Unit) {
+fun LoginScreen(viewModel: RetakeViewModel) {
     var email by remember { mutableStateOf("kuznetsova.i.a@edu.mirea.ru") }
     var password by remember { mutableStateOf("Teacher123!") }
-    var isLoading by remember { mutableStateOf(false) }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
     var role by remember { mutableStateOf(UserRole.STUDENT) }
-    val context = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val uiState by viewModel.uiState.collectAsState()
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -80,22 +89,12 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
         Spacer(modifier = Modifier.height(24.dp))
         Button(
             onClick = {
-                isLoading = true
-                errorMessage = null
-                scope.launch {
-                    val repository = AuthRepositoryImpl(TokenManager(context))
-                    val loginUseCase = LoginUseCase(repository)
-                    loginUseCase(email, password, role)
-                        .onSuccess { onLoginSuccess() }
-                        .onFailure { errorMessage = it.message }
-                    // "Попробуйте ещё"
-                    isLoading = false
-                }
+                viewModel.login(email, password, role)
             },
             modifier = Modifier.fillMaxWidth(),
-            enabled = !isLoading
+            enabled = !uiState.isLoading
         ) {
-            Text(if (isLoading) "Вход..." else "Войти")
+            Text(if (uiState.isLoading) "Вход..." else "Войти")
         }
         Spacer(modifier = Modifier.height(8.dp))
         Text(
@@ -109,7 +108,7 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onErrorContainer
         )
-        errorMessage?.let {
+        uiState.errorMessage?.let {
             Spacer(modifier = Modifier.height(16.dp))
             Text(it, color = MaterialTheme.colorScheme.error)
         }
