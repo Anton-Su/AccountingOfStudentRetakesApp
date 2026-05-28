@@ -8,15 +8,15 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import com.example.accountingofstudentretakesapp.presentation.ui.screen.LoginScreen
-import com.example.accountingofstudentretakesapp.presentation.ui.screen.RoleHomeScreen
 import com.example.accountingofstudentretakesapp.presentation.model.UserRole
+import com.example.accountingofstudentretakesapp.presentation.ui.screen.AdminHomeScreen
+import com.example.accountingofstudentretakesapp.presentation.ui.screen.StudentHomeScreen
+import com.example.accountingofstudentretakesapp.presentation.ui.screen.TeacherHomeScreen
 import com.example.accountingofstudentretakesapp.presentation.viewmodel.RetakeViewModel
 import kotlinx.coroutines.flow.collectLatest
 
 sealed class Screen(val route: String) {
-
     data object LoginScreen : Screen("login")
-
     data object StudentAllScreen : Screen("student_all_screen")
     data object TeacherAllScreen : Screen("teacher_all_screen")
     data object AdminAllScreen : Screen("admin_all_screen")
@@ -51,7 +51,7 @@ fun Navigation(
             LoginScreen(viewModel = viewModel)
         }
         composable(Screen.StudentAllScreen.route) {
-            RoleHomeScreen(title = "Личный кабинет студента") {
+            StudentHomeScreen(onLogout = {
                 viewModel.logout()
                 navController.navigate(Screen.LoginScreen.route) {
                     popUpTo(navController.graph.findStartDestination().id) {
@@ -59,10 +59,10 @@ fun Navigation(
                     }
                     launchSingleTop = true
                 }
-            }
+            })
         }
         composable(Screen.TeacherAllScreen.route) {
-            RoleHomeScreen(title = "Личный кабинет преподавателя") {
+            TeacherHomeScreen(onLogout = {
                 viewModel.logout()
                 navController.navigate(Screen.LoginScreen.route) {
                     popUpTo(navController.graph.findStartDestination().id) {
@@ -70,11 +70,11 @@ fun Navigation(
                     }
                     launchSingleTop = true
                 }
-            }
+            })
         }
 
         composable(Screen.AdminAllScreen.route) {
-            RoleHomeScreen(title = "Личный кабинет администратора") {
+            AdminHomeScreen(onLogout = {
                 viewModel.logout()
                 navController.navigate(Screen.LoginScreen.route) {
                     popUpTo(navController.graph.findStartDestination().id) {
@@ -82,7 +82,7 @@ fun Navigation(
                     }
                     launchSingleTop = true
                 }
-            }
+            })
         }
 
 //        composable(Screen.PhotoListScreen.route) {
