@@ -10,6 +10,11 @@ import com.example.accountingofstudentretakesapp.domain.model.CommentDto
 import com.example.accountingofstudentretakesapp.domain.model.CreateCommentRequestDto
 import com.example.accountingofstudentretakesapp.domain.model.StudentDebtDto
 import com.example.accountingofstudentretakesapp.domain.model.StudentDebtRankDto
+import com.example.accountingofstudentretakesapp.domain.model.UserDto
+import com.example.accountingofstudentretakesapp.domain.model.RetakeDetailDto
+import com.example.accountingofstudentretakesapp.domain.model.RetakeDetailsResponseDto
+import com.example.accountingofstudentretakesapp.domain.model.EnrollmentDto
+import com.example.accountingofstudentretakesapp.domain.model.GradeRequestDto
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.engine.okhttp.OkHttp
@@ -66,15 +71,6 @@ object KtorClient {
         }
 
     }
-//    suspend fun fetchLaureates(
-//        limit: Int = 50,
-//        offset: Int = 0
-//    ): List<NobelPrizeDto> {
-//        return client.get("http://10.0.2.2:8080/prizes") {
-//            parameter("limit", limit)
-//            parameter("offset", offset)
-//        }.body<List<NobelPrizeDto>>()
-//    }
 
     suspend fun login(email: String, password: String): LoginResponseDto {
         return client.post("http://10.0.2.2:8080/auth/login") {
@@ -88,43 +84,11 @@ object KtorClient {
         }.body()
     }
 
-//    suspend fun getProfile(): UserDto {
-//        return client.get("http://10.0.2.2:8080/users/me") {
-//            contentType(ContentType.Application.Json)
-//            header(
-//                HttpHeaders.Authorization,
-//                "Bearer $currentAccessToken"
-//            )
-//        }.body()
-//    }
-
-//    suspend fun addPrize(prizeId: Int) {
-//        client.post("http://10.0.2.2:8080/users/me/prizes/$prizeId") {
-//            header(
-//                HttpHeaders.Authorization,
-//                "Bearer $currentAccessToken"
-//            )
-//        }
-//    }
-
-//    suspend fun getFavoritePrizes(): List<NobelPrizeDto> {
-//        return client.get("http://10.0.2.2:8080/users/me/prizes") {
-//            contentType(ContentType.Application.Json)
-//            header(
-//                HttpHeaders.Authorization,
-//                "Bearer $currentAccessToken"
-//            )
-//        }.body()
-//    }
-
-//    suspend fun deletePrize(prizeId: Int) {
-//        client.delete("http://10.0.2.2:8080/users/me/prizes/$prizeId") {
-//            header(
-//                HttpHeaders.Authorization,
-//                "Bearer $currentAccessToken"
-//            )
-//        }
-//    }
+    suspend fun getProfile(): UserDto {
+        return client.get("http://10.0.2.2:8080/api/users/me") {
+            contentType(ContentType.Application.Json)
+        }.body()
+    }
 
     suspend fun getTeachersByDiscipline(discipline: String): List<TeacherDto> {
         return client.get("http://10.0.2.2:8080/api/admin/teachers") {
@@ -187,6 +151,26 @@ object KtorClient {
     suspend fun getStudentDebtRank(studentId: Long): StudentDebtRankDto {
         return client.get("http://10.0.2.2:8080/api/student/$studentId/debts/rank") {
             contentType(ContentType.Application.Json)
+        }.body()
+    }
+
+    // Teacher endpoints
+    suspend fun getTeacherRetakes(): List<RetakeDetailDto> {
+        return client.get("http://10.0.2.2:8080/api/teacher/retakes") {
+            contentType(ContentType.Application.Json)
+        }.body()
+    }
+
+    suspend fun getRetakeDetails(retakeId: Long): RetakeDetailsResponseDto {
+        return client.get("http://10.0.2.2:8080/api/teacher/retake/$retakeId") {
+            contentType(ContentType.Application.Json)
+        }.body()
+    }
+
+    suspend fun gradeStudent(retakeId: Long, studentId: Long, request: GradeRequestDto): EnrollmentDto {
+        return client.post("http://10.0.2.2:8080/api/teacher/retake/$retakeId/student/$studentId/grade") {
+            contentType(ContentType.Application.Json)
+            setBody(request)
         }.body()
     }
 
