@@ -18,6 +18,7 @@ import com.example.accountingofstudentretakesapp.data.repository.TeacherReposito
 import com.example.accountingofstudentretakesapp.data.repository.UserRepositoryImpl
 import com.example.accountingofstudentretakesapp.domain.usecase.GetCurrentUserUseCase
 import com.example.accountingofstudentretakesapp.domain.usecase.GetTeacherRetakesUseCase
+import com.example.accountingofstudentretakesapp.domain.usecase.GetRetakeDetailsUseCase
 import com.example.accountingofstudentretakesapp.domain.usecase.LoginUseCase
 import com.example.accountingofstudentretakesapp.presentation.viewmodel.RetakeViewModel
 import com.example.accountingofstudentretakesapp.ui.theme.AccountingOfStudentRetakesAppTheme
@@ -34,12 +35,14 @@ class MainActivity : ComponentActivity() {
         val loginUseCase = LoginUseCase(authRepository)
         val getCurrentUserUseCase = GetCurrentUserUseCase(userRepository)
         val getTeacherRetakesUseCase = GetTeacherRetakesUseCase(teacherRepository)
+        val getRetakeDetailsUseCase = GetRetakeDetailsUseCase(teacherRepository)
         val viewModel = RetakeViewModel(
             authRepository = authRepository,
             settingsDataStore = settingsDataStore,
             loginUseCase = loginUseCase,
             getCurrentUserUseCase = getCurrentUserUseCase,
             getTeacherRetakesUseCase = getTeacherRetakesUseCase,
+            getRetakeDetailsUseCase = getRetakeDetailsUseCase,
         )
         setContent {
             AccountingOfStudentRetakesAppTheme {

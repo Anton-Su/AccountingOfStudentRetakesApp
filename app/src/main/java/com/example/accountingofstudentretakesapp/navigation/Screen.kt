@@ -7,11 +7,14 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.navArgument
+import androidx.navigation.NavType
 import com.example.accountingofstudentretakesapp.presentation.ui.screen.LoginScreen
 import com.example.accountingofstudentretakesapp.presentation.model.UserRole
 import com.example.accountingofstudentretakesapp.presentation.ui.screen.AdminHomeScreen
 import com.example.accountingofstudentretakesapp.presentation.ui.screen.StudentHomeScreen
 import com.example.accountingofstudentretakesapp.presentation.ui.screen.TeacherHomeScreen
+import com.example.accountingofstudentretakesapp.presentation.ui.screen.TeacherRetakeDetailsScreen
 import com.example.accountingofstudentretakesapp.presentation.viewmodel.RetakeViewModel
 import kotlinx.coroutines.flow.collectLatest
 import androidx.compose.runtime.collectAsState
@@ -21,6 +24,9 @@ sealed class Screen(val route: String) {
     data object StudentAllScreen : Screen("student_all_screen")
     data object TeacherAllScreen : Screen("teacher_all_screen")
     data object AdminAllScreen : Screen("admin_all_screen")
+    data object TeacherRetakeDetailsScreen : Screen("teacher_retake_details/{retakeId}") {
+        fun createRoute(retakeId: Long) = "teacher_retake_details/$retakeId"
+    }
 
 //    data object PhotoDetailScreen : Screen("photo_detail/{itemId}") {
 //        fun createRoute(itemId: Int) = "photo_detail/$itemId"
@@ -66,6 +72,9 @@ fun Navigation(
             TeacherHomeScreen(
                 uiState = viewModel.uiState.collectAsState().value,
                 onLoadRetakes = { viewModel.loadTeacherRetakes() },
+                onRetakeClick = { retakeId ->
+                    navController.navigate(Screen.TeacherRetakeDetailsScreen.createRoute(retakeId))
+                },
                 onLogout = {
                     viewModel.logout()
                     navController.navigate(Screen.LoginScreen.route) {
@@ -74,6 +83,21 @@ fun Navigation(
                         }
                         launchSingleTop = true
                     }
+                }
+            )
+        }
+
+        composable(
+            Screen.TeacherRetakeDetailsScreen.route,
+            arguments = listOf(navArgument("retakeId") { type = NavType.LongType })
+        ) { backStackEntry ->
+            val retakeId = backStackEntry.arguments?.getLong("retakeId") ?: return@composable
+            TeacherRetakeDetailsScreen(
+                retakeId = retakeId,
+                uiState = viewModel.uiState.collectAsState().value,
+                onLoadRetakeDetails = { viewModel.loadTeacherRetakeDetails(it) },
+                onBack = {
+                    navController.popBackStack()
                 }
             )
         }

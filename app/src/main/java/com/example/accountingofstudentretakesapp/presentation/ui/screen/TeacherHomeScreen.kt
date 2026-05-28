@@ -22,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.clickable
 import androidx.compose.ui.unit.dp
 import com.example.accountingofstudentretakesapp.presentation.viewmodel.RetakeUiState
 
@@ -30,6 +31,7 @@ import com.example.accountingofstudentretakesapp.presentation.viewmodel.RetakeUi
 fun TeacherHomeScreen(
     uiState: RetakeUiState,
     onLoadRetakes: () -> Unit,
+    onRetakeClick: (Long) -> Unit,
     onLogout: () -> Unit,
 ) {
 	LaunchedEffect(Unit) {
@@ -85,7 +87,11 @@ fun TeacherHomeScreen(
 						verticalArrangement = Arrangement.spacedBy(8.dp)
 					) {
 						items(uiState.teacherRetakes) { retake ->
-							Card(modifier = Modifier.fillMaxWidth()) {
+							Card(
+								modifier = Modifier
+									.fillMaxWidth()
+									.clickable { onRetakeClick(retake.id) }
+							) {
 								Column(modifier = Modifier.padding(12.dp)) {
 									Text(
 										text = retake.type,

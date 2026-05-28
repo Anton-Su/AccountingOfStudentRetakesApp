@@ -4,9 +4,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.accountingofstudentretakesapp.data.remote.SettingsDataStore
 import com.example.accountingofstudentretakesapp.domain.model.RetakeDetailDto
+import com.example.accountingofstudentretakesapp.domain.model.RetakeDetailsResponseDto
 import com.example.accountingofstudentretakesapp.domain.model.UserDto
 import com.example.accountingofstudentretakesapp.domain.repository.AuthRepository
 import com.example.accountingofstudentretakesapp.domain.usecase.GetCurrentUserUseCase
+import com.example.accountingofstudentretakesapp.domain.usecase.GetRetakeDetailsUseCase
 import com.example.accountingofstudentretakesapp.domain.usecase.GetTeacherRetakesUseCase
 import com.example.accountingofstudentretakesapp.domain.usecase.LoginUseCase
 import com.example.accountingofstudentretakesapp.presentation.model.UserRole
@@ -26,6 +28,9 @@ data class RetakeUiState(
     val teacherRetakes: List<RetakeDetailDto> = emptyList(),
     val teacherRetakesLoading: Boolean = false,
     val teacherRetakesError: String? = null,
+    val teacherRetakeDetails: RetakeDetailsResponseDto? = null,
+    val teacherRetakeDetailsLoading: Boolean = false,
+    val teacherRetakeDetailsError: String? = null,
 )
 
 class RetakeViewModel(
@@ -34,6 +39,7 @@ class RetakeViewModel(
     private val loginUseCase: LoginUseCase,
     private val getCurrentUserUseCase: GetCurrentUserUseCase,
     private val getTeacherRetakesUseCase: GetTeacherRetakesUseCase,
+    private val getRetakeDetailsUseCase: GetRetakeDetailsUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(RetakeUiState())
@@ -120,6 +126,37 @@ class RetakeViewModel(
                         it.copy(
                             teacherRetakesLoading = false,
                             teacherRetakesError = error.message ?: "Не удалось загрузить пересдачи"
+                        )
+                    }
+                }
+        }
+    }
+
+    fun loadTeacherRetakeDetails(retakeId: Long) {
+        viewModelScope.launch {
+            _uiState.update {
+                it.copy(
+                    teacherRetakeDetailsLoading = true,
+                    teacherRetakeDetailsError = null,
+                    teacherRetakeDetails = null
+                )
+            }
+
+            runCatching { getRetakeDetailsUseCase(retakeId) }
+                .onSuccess { details ->
+                    _uiState.update {
+                        it.copy(
+                            teacherRetakeDetails = details,
+                            teacherRetakeDetailsLoading = false,
+                            teacherRetakeDetailsError = null
+                        )
+                    }
+                }
+                .onFailure { error ->
+                    _uiState.update {
+                        it.copy(
+                            teacherRetakeDetailsLoading = false,
+                            teacherRetakeDetailsError = error.message ?: "Не удалось загрузить детали пересдачи"
                         )
                     }
                 }
