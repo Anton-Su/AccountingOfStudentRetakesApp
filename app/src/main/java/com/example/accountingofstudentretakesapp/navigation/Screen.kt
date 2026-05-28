@@ -9,9 +9,12 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.navArgument
 import androidx.navigation.NavType
+import com.example.accountingofstudentretakesapp.presentation.ui.screen.AdminCreateRetakeScreen
+import com.example.accountingofstudentretakesapp.presentation.ui.screen.AdminHomeScreen
+import com.example.accountingofstudentretakesapp.presentation.ui.screen.AdminRedactRetakeScreen
+import com.example.accountingofstudentretakesapp.presentation.ui.screen.AdminCommentsScreen
 import com.example.accountingofstudentretakesapp.presentation.ui.screen.LoginScreen
 import com.example.accountingofstudentretakesapp.presentation.model.UserRole
-import com.example.accountingofstudentretakesapp.presentation.ui.screen.AdminHomeScreen
 import com.example.accountingofstudentretakesapp.presentation.ui.screen.StudentHomeScreen
 import com.example.accountingofstudentretakesapp.presentation.ui.screen.TeacherHomeScreen
 import com.example.accountingofstudentretakesapp.presentation.ui.screen.TeacherRetakeDetailsScreen
@@ -24,13 +27,14 @@ sealed class Screen(val route: String) {
     data object StudentAllScreen : Screen("student_all_screen")
     data object TeacherAllScreen : Screen("teacher_all_screen")
     data object AdminAllScreen : Screen("admin_all_screen")
+    data object AdminCreateRetakeScreen : Screen("admin_create_retake")
+    data object AdminRedactRetakeScreen : Screen("admin_redact_retake/{retakeId}") {
+        fun createRoute(retakeId: Long) = "admin_redact_retake/$retakeId"
+    }
+    data object AdminCommentsScreen : Screen("admin_comments")
     data object TeacherRetakeDetailsScreen : Screen("teacher_retake_details/{retakeId}") {
         fun createRoute(retakeId: Long) = "teacher_retake_details/$retakeId"
     }
-
-//    data object PhotoDetailScreen : Screen("photo_detail/{itemId}") {
-//        fun createRoute(itemId: Int) = "photo_detail/$itemId"
-//    }
 }
 
 @Composable
@@ -106,15 +110,113 @@ fun Navigation(
         }
 
         composable(Screen.AdminAllScreen.route) {
-            AdminHomeScreen(onLogout = {
-                viewModel.logout()
-                navController.navigate(Screen.LoginScreen.route) {
-                    popUpTo(navController.graph.findStartDestination().id) {
-                        inclusive = true
+            AdminHomeScreen(
+                uiState = viewModel.uiState.collectAsState().value,
+                onLoadRetakes = { viewModel.loadAllRetakes() },
+                onAddRetake = {
+                    navController.navigate(Screen.AdminCreateRetakeScreen.route)
+                },
+                onEditRetake = { retakeId ->
+                    navController.navigate(Screen.AdminRedactRetakeScreen.createRoute(retakeId))
+                },
+                onDeleteRetake = { retakeId ->
+                    viewModel.deleteRetake(
+                        retakeId,
+                        onSuccess = {
+                            navController.popBackStack()
+                        },
+                        onError = { error ->
+                            // Обработка ошибки
+                        }
+                    )
+                },
+                onLogout = {
+                    viewModel.logout()
+                    navController.navigate(Screen.LoginScreen.route) {
+                        popUpTo(navController.graph.findStartDestination().id) {
+                            inclusive = true
+                        }
+                        launchSingleTop = true
                     }
-                    launchSingleTop = true
+                },
+                onComments = {
+                    navController.navigate(Screen.AdminCommentsScreen.route)
                 }
-            })
+            )
+        }
+
+        composable(Screen.AdminCommentsScreen.route) {
+            AdminCommentsScreen(
+                uiState = viewModel.uiState.collectAsState().value,
+                onLoadComments = { viewModel.loadAllComments() },
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Screen.AdminCreateRetakeScreen.route) {
+            AdminCreateRetakeScreen(
+                uiState = viewModel.uiState.collectAsState().value,
+                onLoadSubjects = { viewModel.loadSubjects() },
+                onLoadTeachers = { discipline ->
+                    viewModel.loadTeachersByDiscipline(discipline)
+                },
+                onCreateRetake = { startAt, endAt, teacherIds, subjectId, type, place, admission ->
+                    viewModel.createRetake(
+                        startAt = startAt,
+                        endAt = endAt,
+                        teacherIds = teacherIds,
+                        subjectId = subjectId,
+                        type = type,
+                        place = place,
+                        admission = admission,
+                        onSuccess = {
+                            navController.popBackStack()
+                        },
+                        onError = { error ->
+                            // Обработка ошибки
+                        }
+                    )
+                },
+                onBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        composable(
+            Screen.AdminRedactRetakeScreen.route,
+            arguments = listOf(navArgument("retakeId") { type = NavType.LongType })
+        ) { backStackEntry ->
+            val retakeId = backStackEntry.arguments?.getLong("retakeId") ?: return@composable
+            AdminRedactRetakeScreen(
+                retakeId = retakeId,
+                uiState = viewModel.uiState.collectAsState().value,
+                onLoadSubjects = { viewModel.loadSubjects() },
+                onLoadTeachers = { discipline ->
+                    viewModel.loadTeachersByDiscipline(discipline)
+                },
+                onRedactRetake = { id, startAt, endAt, teacherIds, subjectId, type, place, admission ->
+                    viewModel.redactRetake(
+                        retakeId = id,
+                        startAt = startAt,
+                        endAt = endAt,
+                        teacherIds = teacherIds,
+                        subjectId = subjectId,
+                        type = type,
+                        place = place,
+                        admission = admission,
+                        onSuccess = {
+                            navController.popBackStack()
+                        },
+                        onError = { error ->
+                            // Обработка ошибки
+                        }
+                    )
+                },
+                onBack = {
+                    navController.popBackStack()
+                }
+            )
         }
 
 //        composable(Screen.PhotoListScreen.route) {

@@ -13,15 +13,22 @@ import androidx.navigation.compose.rememberNavController
 import com.example.accountingofstudentretakesapp.navigation.Navigation
 import com.example.accountingofstudentretakesapp.data.remote.SettingsDataStore
 import com.example.accountingofstudentretakesapp.data.remote.TokenManager
+import com.example.accountingofstudentretakesapp.data.repository.AdminRepositoryImpl
 import com.example.accountingofstudentretakesapp.data.repository.AuthRepositoryImpl
 import com.example.accountingofstudentretakesapp.data.repository.TeacherRepositoryImpl
 import com.example.accountingofstudentretakesapp.data.repository.UserRepositoryImpl
+import com.example.accountingofstudentretakesapp.domain.usecase.CreateRetakeUseCase
+import com.example.accountingofstudentretakesapp.domain.usecase.DeleteRetakeUseCase
 import com.example.accountingofstudentretakesapp.domain.usecase.GetCurrentUserUseCase
 import com.example.accountingofstudentretakesapp.domain.usecase.GetTeacherRetakesUseCase
 import com.example.accountingofstudentretakesapp.domain.usecase.GetRetakeDetailsUseCase
 import com.example.accountingofstudentretakesapp.domain.usecase.GradeStudentUseCase
 import com.example.accountingofstudentretakesapp.domain.usecase.LoginUseCase
 import com.example.accountingofstudentretakesapp.domain.usecase.GetAllRetakesUseCase
+import com.example.accountingofstudentretakesapp.domain.usecase.GetSubjectsUseCase
+import com.example.accountingofstudentretakesapp.domain.usecase.GetTeachersByDisciplineUseCase
+import com.example.accountingofstudentretakesapp.domain.usecase.RedactRetakeUseCase
+import com.example.accountingofstudentretakesapp.domain.usecase.GetAllCommentsUseCase
 import com.example.accountingofstudentretakesapp.presentation.viewmodel.RetakeViewModel
 import com.example.accountingofstudentretakesapp.ui.theme.AccountingOfStudentRetakesAppTheme
 
@@ -33,9 +40,17 @@ class MainActivity : ComponentActivity() {
         val tokenManager = TokenManager(applicationContext)
         val authRepository = AuthRepositoryImpl(tokenManager)
         val userRepository = UserRepositoryImpl()
+        val getCurrentUserUseCase = GetCurrentUserUseCase(userRepository)
+        val adminRepository = AdminRepositoryImpl()
+        val getAllRetakesUseCase = GetAllRetakesUseCase(adminRepository)
+        val getSubjectsUseCase = GetSubjectsUseCase(adminRepository)
+        val getTeachersByDisciplineUseCase = GetTeachersByDisciplineUseCase(adminRepository)
+        val createRetakeUseCase = CreateRetakeUseCase(adminRepository)
+        val deleteRetakeUseCase = DeleteRetakeUseCase(adminRepository)
+        val redactRetakeUseCase = RedactRetakeUseCase(adminRepository)
+        val getAllCommentsUseCase = GetAllCommentsUseCase(adminRepository)
         val teacherRepository = TeacherRepositoryImpl()
         val loginUseCase = LoginUseCase(authRepository)
-        val getCurrentUserUseCase = GetCurrentUserUseCase(userRepository)
         val getTeacherRetakesUseCase = GetTeacherRetakesUseCase(teacherRepository)
         val getRetakeDetailsUseCase = GetRetakeDetailsUseCase(teacherRepository)
         val gradeStudentUseCase = GradeStudentUseCase(teacherRepository)
@@ -47,6 +62,13 @@ class MainActivity : ComponentActivity() {
             getTeacherRetakesUseCase = getTeacherRetakesUseCase,
             getRetakeDetailsUseCase = getRetakeDetailsUseCase,
             gradeStudentUseCase = gradeStudentUseCase,
+            getAllRetakesUseCase = getAllRetakesUseCase,
+            getSubjectsUseCase = getSubjectsUseCase,
+            getTeachersByDisciplineUseCase = getTeachersByDisciplineUseCase,
+            createRetakeUseCase = createRetakeUseCase,
+            deleteRetakeUseCase = deleteRetakeUseCase,
+            redactRetakeUseCase = redactRetakeUseCase,
+            getAllCommentsUseCase = getAllCommentsUseCase,
         )
         setContent {
             AccountingOfStudentRetakesAppTheme {

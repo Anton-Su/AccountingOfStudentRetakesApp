@@ -5,13 +5,23 @@ import androidx.lifecycle.viewModelScope
 import com.example.accountingofstudentretakesapp.data.remote.SettingsDataStore
 import com.example.accountingofstudentretakesapp.domain.model.RetakeDetailDto
 import com.example.accountingofstudentretakesapp.domain.model.RetakeDetailsResponseDto
+import com.example.accountingofstudentretakesapp.domain.model.SubjectDto
+import com.example.accountingofstudentretakesapp.domain.model.TeacherDto
 import com.example.accountingofstudentretakesapp.domain.model.UserDto
 import com.example.accountingofstudentretakesapp.domain.repository.AuthRepository
+import com.example.accountingofstudentretakesapp.domain.usecase.CreateRetakeUseCase
+import com.example.accountingofstudentretakesapp.domain.usecase.DeleteRetakeUseCase
+import com.example.accountingofstudentretakesapp.domain.usecase.GetAllRetakesUseCase
 import com.example.accountingofstudentretakesapp.domain.usecase.GetCurrentUserUseCase
 import com.example.accountingofstudentretakesapp.domain.usecase.GetRetakeDetailsUseCase
+import com.example.accountingofstudentretakesapp.domain.usecase.GetSubjectsUseCase
 import com.example.accountingofstudentretakesapp.domain.usecase.GetTeacherRetakesUseCase
+import com.example.accountingofstudentretakesapp.domain.usecase.GetTeachersByDisciplineUseCase
 import com.example.accountingofstudentretakesapp.domain.usecase.GradeStudentUseCase
 import com.example.accountingofstudentretakesapp.domain.usecase.LoginUseCase
+import com.example.accountingofstudentretakesapp.domain.usecase.RedactRetakeUseCase
+import com.example.accountingofstudentretakesapp.domain.usecase.GetAllCommentsUseCase
+import com.example.accountingofstudentretakesapp.domain.model.CommentDto
 import com.example.accountingofstudentretakesapp.presentation.model.UserRole
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -32,6 +42,24 @@ data class RetakeUiState(
     val teacherRetakeDetails: RetakeDetailsResponseDto? = null,
     val teacherRetakeDetailsLoading: Boolean = false,
     val teacherRetakeDetailsError: String? = null,
+    val allRetakes: List<RetakeDetailDto> = emptyList(),
+    val allRetakesLoading: Boolean = false,
+    val allRetakesError: String? = null,
+    val subjects: List<SubjectDto> = emptyList(),
+    val subjectsLoading: Boolean = false,
+    val subjectsError: String? = null,
+    val teachersByDiscipline: List<TeacherDto> = emptyList(),
+    val teachersByDisciplineLoading: Boolean = false,
+    val teachersByDisciplineError: String? = null,
+    val createRetakeLoading: Boolean = false,
+    val createRetakeError: String? = null,
+    val deleteRetakeLoading: Boolean = false,
+    val deleteRetakeError: String? = null,
+    val redactRetakeLoading: Boolean = false,
+    val redactRetakeError: String? = null,
+    val allComments: List<CommentDto> = emptyList(),
+    val allCommentsLoading: Boolean = false,
+    val allCommentsError: String? = null,
 )
 
 class RetakeViewModel(
@@ -42,6 +70,13 @@ class RetakeViewModel(
     private val getTeacherRetakesUseCase: GetTeacherRetakesUseCase,
     private val getRetakeDetailsUseCase: GetRetakeDetailsUseCase,
     private val gradeStudentUseCase: GradeStudentUseCase,
+    private val getAllRetakesUseCase: GetAllRetakesUseCase,
+    private val getSubjectsUseCase: GetSubjectsUseCase,
+    private val getTeachersByDisciplineUseCase: GetTeachersByDisciplineUseCase,
+    private val getAllCommentsUseCase: GetAllCommentsUseCase,
+    private val createRetakeUseCase: CreateRetakeUseCase,
+    private val deleteRetakeUseCase: DeleteRetakeUseCase,
+    private val redactRetakeUseCase: RedactRetakeUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(RetakeUiState())
@@ -186,6 +221,271 @@ class RetakeViewModel(
                             teacherRetakeDetailsError = error.message ?: "Не удалось выставить оценку"
                         )
                     }
+                }
+        }
+    }
+
+    fun loadAllRetakes() {
+        viewModelScope.launch {
+            _uiState.update {
+                it.copy(
+                    allRetakesLoading = true,
+                    allRetakesError = null
+                )
+            }
+
+            runCatching { getAllRetakesUseCase() }
+                .onSuccess { retakes ->
+                    _uiState.update {
+                        it.copy(
+                            allRetakes = retakes,
+                            allRetakesLoading = false,
+                            allRetakesError = null
+                        )
+                    }
+                }
+                .onFailure { error ->
+                    _uiState.update {
+                        it.copy(
+                            allRetakesLoading = false,
+                            allRetakesError = error.message ?: "Не удалось загрузить пересдачи"
+                        )
+                    }
+                }
+        }
+    }
+
+    fun loadSubjects() {
+        viewModelScope.launch {
+            _uiState.update {
+                it.copy(
+                    subjectsLoading = true,
+                    subjectsError = null
+                )
+            }
+
+            runCatching { getSubjectsUseCase() }
+                .onSuccess { subjects ->
+                    _uiState.update {
+                        it.copy(
+                            subjects = subjects,
+                            subjectsLoading = false,
+                            subjectsError = null
+                        )
+                    }
+                }
+                .onFailure { error ->
+                    _uiState.update {
+                        it.copy(
+                            subjectsLoading = false,
+                            subjectsError = error.message ?: "Не удалось загрузить предметы"
+                        )
+                    }
+                }
+        }
+    }
+
+    fun loadTeachersByDiscipline(discipline: String) {
+        viewModelScope.launch {
+            _uiState.update {
+                it.copy(
+                    teachersByDisciplineLoading = true,
+                    teachersByDisciplineError = null
+                )
+            }
+
+            runCatching { getTeachersByDisciplineUseCase(discipline) }
+                .onSuccess { teachers ->
+                    _uiState.update {
+                        it.copy(
+                            teachersByDiscipline = teachers,
+                            teachersByDisciplineLoading = false,
+                            teachersByDisciplineError = null
+                        )
+                    }
+                }
+                .onFailure { error ->
+                    _uiState.update {
+                        it.copy(
+                            teachersByDisciplineLoading = false,
+                            teachersByDisciplineError = error.message ?: "Не удалось загрузить преподавателей"
+                        )
+                    }
+                }
+        }
+    }
+
+    fun loadAllComments() {
+        viewModelScope.launch {
+            _uiState.update {
+                it.copy(
+                    allCommentsLoading = true,
+                    allCommentsError = null
+                )
+            }
+
+            runCatching { getAllCommentsUseCase() }
+                .onSuccess { comments ->
+                    _uiState.update {
+                        it.copy(
+                            allComments = comments,
+                            allCommentsLoading = false,
+                            allCommentsError = null
+                        )
+                    }
+                }
+                .onFailure { error ->
+                    _uiState.update {
+                        it.copy(
+                            allCommentsLoading = false,
+                            allCommentsError = error.message ?: "Не удалось загрузить комментарии"
+                        )
+                    }
+                }
+        }
+    }
+
+    fun createRetake(
+        startAt: String,
+        endAt: String,
+        teacherIds: List<Long>,
+        subjectId: Long,
+        type: String,
+        place: String,
+        admission: String? = null,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        viewModelScope.launch {
+            _uiState.update {
+                it.copy(
+                    createRetakeLoading = true,
+                    createRetakeError = null
+                )
+            }
+
+            runCatching {
+                createRetakeUseCase(
+                    startAt = startAt,
+                    endAt = endAt,
+                    teacherIds = teacherIds,
+                    subjectId = subjectId,
+                    type = type,
+                    place = place,
+                    admission = admission
+                )
+            }
+                .onSuccess { _ ->
+                    _uiState.update {
+                        it.copy(
+                            createRetakeLoading = false,
+                            createRetakeError = null
+                        )
+                    }
+                    loadAllRetakes()
+                    onSuccess()
+                }
+                .onFailure { error ->
+                    val errorMsg = error.message ?: "Не удалось создать пересдачу"
+                    _uiState.update {
+                        it.copy(
+                            createRetakeLoading = false,
+                            createRetakeError = errorMsg
+                        )
+                    }
+                    onError(errorMsg)
+                }
+        }
+    }
+
+    fun deleteRetake(
+        retakeId: Long,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        viewModelScope.launch {
+            _uiState.update {
+                it.copy(
+                    deleteRetakeLoading = true,
+                    deleteRetakeError = null
+                )
+            }
+
+            runCatching { deleteRetakeUseCase(retakeId) }
+                .onSuccess { _ ->
+                    _uiState.update {
+                        it.copy(
+                            deleteRetakeLoading = false,
+                            deleteRetakeError = null
+                        )
+                    }
+                    loadAllRetakes()
+                    onSuccess()
+                }
+                .onFailure { error ->
+                    val errorMsg = error.message ?: "Не удалось удалить пересдачу"
+                    _uiState.update {
+                        it.copy(
+                            deleteRetakeLoading = false,
+                            deleteRetakeError = errorMsg
+                        )
+                    }
+                    onError(errorMsg)
+                }
+        }
+    }
+
+    fun redactRetake(
+        retakeId: Long,
+        startAt: String,
+        endAt: String,
+        teacherIds: List<Long>,
+        subjectId: Long,
+        type: String,
+        place: String,
+        admission: String? = null,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        viewModelScope.launch {
+            _uiState.update {
+                it.copy(
+                    redactRetakeLoading = true,
+                    redactRetakeError = null
+                )
+            }
+
+            runCatching {
+                redactRetakeUseCase(
+                    id = retakeId,
+                    startAt = startAt,
+                    endAt = endAt,
+                    teacherIds = teacherIds,
+                    subjectId = subjectId,
+                    type = type,
+                    place = place,
+                    admission = admission
+                )
+            }
+                .onSuccess { _ ->
+                    _uiState.update {
+                        it.copy(
+                            redactRetakeLoading = false,
+                            redactRetakeError = null
+                        )
+                    }
+                    loadAllRetakes()
+                    onSuccess()
+                }
+                .onFailure { error ->
+                    val errorMsg = error.message ?: "Не удалось редактировать пересдачу"
+                    _uiState.update {
+                        it.copy(
+                            redactRetakeLoading = false,
+                            redactRetakeError = errorMsg
+                        )
+                    }
+                    onError(errorMsg)
                 }
         }
     }
