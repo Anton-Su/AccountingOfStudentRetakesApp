@@ -96,6 +96,9 @@ fun Navigation(
                 retakeId = retakeId,
                 uiState = viewModel.uiState.collectAsState().value,
                 onLoadRetakeDetails = { viewModel.loadTeacherRetakeDetails(it) },
+                onGradeStudent = { retakeId, studentId, score ->
+                    viewModel.gradeStudent(retakeId, studentId, score)
+                },
                 onBack = {
                     navController.popBackStack()
                 }

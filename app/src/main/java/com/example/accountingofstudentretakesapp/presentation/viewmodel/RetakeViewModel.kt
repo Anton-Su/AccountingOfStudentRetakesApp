@@ -10,6 +10,7 @@ import com.example.accountingofstudentretakesapp.domain.repository.AuthRepositor
 import com.example.accountingofstudentretakesapp.domain.usecase.GetCurrentUserUseCase
 import com.example.accountingofstudentretakesapp.domain.usecase.GetRetakeDetailsUseCase
 import com.example.accountingofstudentretakesapp.domain.usecase.GetTeacherRetakesUseCase
+import com.example.accountingofstudentretakesapp.domain.usecase.GradeStudentUseCase
 import com.example.accountingofstudentretakesapp.domain.usecase.LoginUseCase
 import com.example.accountingofstudentretakesapp.presentation.model.UserRole
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -40,6 +41,7 @@ class RetakeViewModel(
     private val getCurrentUserUseCase: GetCurrentUserUseCase,
     private val getTeacherRetakesUseCase: GetTeacherRetakesUseCase,
     private val getRetakeDetailsUseCase: GetRetakeDetailsUseCase,
+    private val gradeStudentUseCase: GradeStudentUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(RetakeUiState())
@@ -162,5 +164,29 @@ class RetakeViewModel(
                 }
         }
     }
-}
 
+    fun gradeStudent(retakeId: Long, studentId: Long, score: Int) {
+        viewModelScope.launch {
+            runCatching { gradeStudentUseCase(retakeId, studentId, score) }
+                .onSuccess { _ ->
+                    _uiState.update { currentState ->
+                        val updatedDetails = currentState.teacherRetakeDetails?.copy(
+                            enrollments = currentState.teacherRetakeDetails.enrollments.filter {
+                                it.studentId != studentId
+                            }
+                        )
+                        currentState.copy(
+                            teacherRetakeDetails = updatedDetails
+                        )
+                    }
+                }
+                .onFailure { error ->
+                    _uiState.update {
+                        it.copy(
+                            teacherRetakeDetailsError = error.message ?: "Не удалось выставить оценку"
+                        )
+                    }
+                }
+        }
+    }
+}
