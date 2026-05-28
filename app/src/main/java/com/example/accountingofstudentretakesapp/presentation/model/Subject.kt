@@ -1,8 +1,6 @@
 package com.example.accountingofstudentretakesapp.presentation.model
 
-enum class Role {
-    STUDENT,
-    TEACHER,
-    ADMIN
-}
-
+data class Subject(
+    val id: Long,
+    val title: String
+)
