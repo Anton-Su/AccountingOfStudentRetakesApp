@@ -1,8 +1,13 @@
+@file:Suppress("unused")
+
 package com.example.accountingofstudentretakesapp.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.accountingofstudentretakesapp.data.remote.SettingsDataStore
+import com.example.accountingofstudentretakesapp.domain.model.CreateCommentRequestDto
+import com.example.accountingofstudentretakesapp.domain.model.StudentDebtDto
+import com.example.accountingofstudentretakesapp.domain.model.StudentDebtRankDto
 import com.example.accountingofstudentretakesapp.domain.model.RetakeDetailDto
 import com.example.accountingofstudentretakesapp.domain.model.RetakeDetailsResponseDto
 import com.example.accountingofstudentretakesapp.domain.model.SubjectDto
@@ -10,13 +15,18 @@ import com.example.accountingofstudentretakesapp.domain.model.TeacherDto
 import com.example.accountingofstudentretakesapp.domain.model.UserDto
 import com.example.accountingofstudentretakesapp.domain.repository.AuthRepository
 import com.example.accountingofstudentretakesapp.domain.usecase.CreateRetakeUseCase
+import com.example.accountingofstudentretakesapp.domain.usecase.CancelRetakeEnrollmentUseCase
+import com.example.accountingofstudentretakesapp.domain.usecase.CreateCommentUseCase
 import com.example.accountingofstudentretakesapp.domain.usecase.DeleteRetakeUseCase
 import com.example.accountingofstudentretakesapp.domain.usecase.GetAllRetakesUseCase
 import com.example.accountingofstudentretakesapp.domain.usecase.GetCurrentUserUseCase
+import com.example.accountingofstudentretakesapp.domain.usecase.GetStudentDebtRankUseCase
+import com.example.accountingofstudentretakesapp.domain.usecase.GetStudentDebtsUseCase
 import com.example.accountingofstudentretakesapp.domain.usecase.GetRetakeDetailsUseCase
 import com.example.accountingofstudentretakesapp.domain.usecase.GetSubjectsUseCase
 import com.example.accountingofstudentretakesapp.domain.usecase.GetTeacherRetakesUseCase
 import com.example.accountingofstudentretakesapp.domain.usecase.GetTeachersByDisciplineUseCase
+import com.example.accountingofstudentretakesapp.domain.usecase.EnrollToRetakeUseCase
 import com.example.accountingofstudentretakesapp.domain.usecase.GradeStudentUseCase
 import com.example.accountingofstudentretakesapp.domain.usecase.LoginUseCase
 import com.example.accountingofstudentretakesapp.domain.usecase.RedactRetakeUseCase
@@ -60,6 +70,18 @@ data class RetakeUiState(
     val allComments: List<CommentDto> = emptyList(),
     val allCommentsLoading: Boolean = false,
     val allCommentsError: String? = null,
+    val studentDebts: List<StudentDebtDto> = emptyList(),
+    val studentDebtsLoading: Boolean = false,
+    val studentDebtsError: String? = null,
+    val studentDebtRank: StudentDebtRankDto? = null,
+    val studentDebtRankLoading: Boolean = false,
+    val studentDebtRankError: String? = null,
+    val createCommentLoading: Boolean = false,
+    val createCommentError: String? = null,
+    val enrollRetakeLoading: Boolean = false,
+    val enrollRetakeError: String? = null,
+    val cancelRetakeLoading: Boolean = false,
+    val cancelRetakeError: String? = null,
 )
 
 class RetakeViewModel(
@@ -74,6 +96,11 @@ class RetakeViewModel(
     private val getSubjectsUseCase: GetSubjectsUseCase,
     private val getTeachersByDisciplineUseCase: GetTeachersByDisciplineUseCase,
     private val getAllCommentsUseCase: GetAllCommentsUseCase,
+    private val getStudentDebtsUseCase: GetStudentDebtsUseCase,
+    private val getStudentDebtRankUseCase: GetStudentDebtRankUseCase,
+    private val enrollToRetakeUseCase: EnrollToRetakeUseCase,
+    private val cancelRetakeEnrollmentUseCase: CancelRetakeEnrollmentUseCase,
+    private val createCommentUseCase: CreateCommentUseCase,
     private val createRetakeUseCase: CreateRetakeUseCase,
     private val deleteRetakeUseCase: DeleteRetakeUseCase,
     private val redactRetakeUseCase: RedactRetakeUseCase,
@@ -88,7 +115,6 @@ class RetakeViewModel(
     fun login(email: String, password: String, selectedRole: UserRole) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
-
             val loginResult = loginUseCase(email, password, selectedRole)
             if (loginResult.isFailure) {
                 _uiState.update {
@@ -99,7 +125,6 @@ class RetakeViewModel(
                 }
                 return@launch
             }
-
             val currentUser = getCurrentUserUseCase()
             if (currentUser == null) {
                 authRepository.logout()
@@ -109,7 +134,6 @@ class RetakeViewModel(
                 }
                 return@launch
             }
-
             if (currentUser.role != selectedRole) {
                 authRepository.logout()
                 settingsDataStore.clearUserData()
@@ -118,7 +142,6 @@ class RetakeViewModel(
                 }
                 return@launch
             }
-
             settingsDataStore.saveUserProfile(currentUser)
             _uiState.update {
                 it.copy(
@@ -345,6 +368,142 @@ class RetakeViewModel(
         }
     }
 
+    fun loadStudentDebts(studentId: Long) {
+        viewModelScope.launch {
+            _uiState.update {
+                it.copy(
+                    studentDebtsLoading = true,
+                    studentDebtsError = null
+                )
+            }
+
+            runCatching { getStudentDebtsUseCase(studentId) }
+                .onSuccess { debts ->
+                    _uiState.update {
+                        it.copy(
+                            studentDebts = debts,
+                            studentDebtsLoading = false,
+                            studentDebtsError = null
+                        )
+                    }
+                }
+                .onFailure { error ->
+                    _uiState.update {
+                        it.copy(
+                            studentDebtsLoading = false,
+                            studentDebtsError = error.message ?: "Не удалось загрузить долги"
+                        )
+                    }
+                }
+        }
+    }
+
+    fun loadStudentDebtRank(studentId: Long) {
+        viewModelScope.launch {
+            _uiState.update {
+                it.copy(
+                    studentDebtRankLoading = true,
+                    studentDebtRankError = null
+                )
+            }
+
+            runCatching { getStudentDebtRankUseCase(studentId) }
+                .onSuccess { rank ->
+                    _uiState.update {
+                        it.copy(
+                            studentDebtRank = rank,
+                            studentDebtRankLoading = false,
+                            studentDebtRankError = null
+                        )
+                    }
+                }
+                .onFailure { error ->
+                    _uiState.update {
+                        it.copy(
+                            studentDebtRankLoading = false,
+                            studentDebtRankError = error.message ?: "Не удалось загрузить рейтинг долгов"
+                        )
+                    }
+                }
+        }
+    }
+
+    fun enrollToRetake(
+        studentId: Long,
+        debtId: Long,
+        retakeId: Long,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit,
+    ) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(enrollRetakeLoading = true, enrollRetakeError = null) }
+            runCatching { enrollToRetakeUseCase(studentId, debtId, retakeId) }
+                .onSuccess {
+                    _uiState.update { it.copy(enrollRetakeLoading = false, enrollRetakeError = null) }
+                    onSuccess()
+                }
+                .onFailure { error ->
+                    val message = error.message ?: "Не удалось записаться на пересдачу"
+                    _uiState.update { it.copy(enrollRetakeLoading = false, enrollRetakeError = message) }
+                    onError(message)
+                }
+        }
+    }
+
+    fun cancelRetakeEnrollment(
+        studentId: Long,
+        debtId: Long,
+        retakeId: Long,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit,
+    ) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(cancelRetakeLoading = true, cancelRetakeError = null) }
+            runCatching { cancelRetakeEnrollmentUseCase(studentId, debtId, retakeId) }
+                .onSuccess {
+                    _uiState.update { it.copy(cancelRetakeLoading = false, cancelRetakeError = null) }
+                    onSuccess()
+                }
+                .onFailure { error ->
+                    val message = error.message ?: "Не удалось отписаться от пересдачи"
+                    _uiState.update { it.copy(cancelRetakeLoading = false, cancelRetakeError = message) }
+                    onError(message)
+                }
+        }
+    }
+
+    fun createComment(
+        studentId: Long,
+        gradeplace: Int,
+        gradeteacher: Int,
+        gradeoverall: Int,
+        comment: String?,
+        retakeId: Long,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit,
+    ) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(createCommentLoading = true, createCommentError = null) }
+            val request = CreateCommentRequestDto(
+                gradeplace = gradeplace,
+                gradeteacher = gradeteacher,
+                gradeoverall = gradeoverall,
+                comment = comment,
+                retakeId = retakeId
+            )
+            runCatching { createCommentUseCase(studentId, request) }
+                .onSuccess {
+                    _uiState.update { it.copy(createCommentLoading = false, createCommentError = null) }
+                    onSuccess()
+                }
+                .onFailure { error ->
+                    val message = error.message ?: "Не удалось отправить комментарий"
+                    _uiState.update { it.copy(createCommentLoading = false, createCommentError = message) }
+                    onError(message)
+                }
+        }
+    }
+
     fun createRetake(
         startAt: String,
         endAt: String,
@@ -363,7 +522,6 @@ class RetakeViewModel(
                     createRetakeError = null
                 )
             }
-
             runCatching {
                 createRetakeUseCase(
                     startAt = startAt,

@@ -15,17 +15,23 @@ import com.example.accountingofstudentretakesapp.data.remote.SettingsDataStore
 import com.example.accountingofstudentretakesapp.data.remote.TokenManager
 import com.example.accountingofstudentretakesapp.data.repository.AdminRepositoryImpl
 import com.example.accountingofstudentretakesapp.data.repository.AuthRepositoryImpl
+import com.example.accountingofstudentretakesapp.data.repository.StudentRepositoryImpl
 import com.example.accountingofstudentretakesapp.data.repository.TeacherRepositoryImpl
 import com.example.accountingofstudentretakesapp.data.repository.UserRepositoryImpl
 import com.example.accountingofstudentretakesapp.domain.usecase.CreateRetakeUseCase
+import com.example.accountingofstudentretakesapp.domain.usecase.CreateCommentUseCase
+import com.example.accountingofstudentretakesapp.domain.usecase.CancelRetakeEnrollmentUseCase
 import com.example.accountingofstudentretakesapp.domain.usecase.DeleteRetakeUseCase
 import com.example.accountingofstudentretakesapp.domain.usecase.GetCurrentUserUseCase
+import com.example.accountingofstudentretakesapp.domain.usecase.GetStudentDebtRankUseCase
+import com.example.accountingofstudentretakesapp.domain.usecase.GetStudentDebtsUseCase
 import com.example.accountingofstudentretakesapp.domain.usecase.GetTeacherRetakesUseCase
 import com.example.accountingofstudentretakesapp.domain.usecase.GetRetakeDetailsUseCase
 import com.example.accountingofstudentretakesapp.domain.usecase.GradeStudentUseCase
 import com.example.accountingofstudentretakesapp.domain.usecase.LoginUseCase
 import com.example.accountingofstudentretakesapp.domain.usecase.GetAllRetakesUseCase
 import com.example.accountingofstudentretakesapp.domain.usecase.GetSubjectsUseCase
+import com.example.accountingofstudentretakesapp.domain.usecase.EnrollToRetakeUseCase
 import com.example.accountingofstudentretakesapp.domain.usecase.GetTeachersByDisciplineUseCase
 import com.example.accountingofstudentretakesapp.domain.usecase.RedactRetakeUseCase
 import com.example.accountingofstudentretakesapp.domain.usecase.GetAllCommentsUseCase
@@ -42,6 +48,7 @@ class MainActivity : ComponentActivity() {
         val userRepository = UserRepositoryImpl()
         val getCurrentUserUseCase = GetCurrentUserUseCase(userRepository)
         val adminRepository = AdminRepositoryImpl()
+        val studentRepository = StudentRepositoryImpl()
         val getAllRetakesUseCase = GetAllRetakesUseCase(adminRepository)
         val getSubjectsUseCase = GetSubjectsUseCase(adminRepository)
         val getTeachersByDisciplineUseCase = GetTeachersByDisciplineUseCase(adminRepository)
@@ -49,6 +56,11 @@ class MainActivity : ComponentActivity() {
         val deleteRetakeUseCase = DeleteRetakeUseCase(adminRepository)
         val redactRetakeUseCase = RedactRetakeUseCase(adminRepository)
         val getAllCommentsUseCase = GetAllCommentsUseCase(adminRepository)
+        val getStudentDebtsUseCase = GetStudentDebtsUseCase(studentRepository)
+        val getStudentDebtRankUseCase = GetStudentDebtRankUseCase(studentRepository)
+        val enrollToRetakeUseCase = EnrollToRetakeUseCase(studentRepository)
+        val cancelRetakeEnrollmentUseCase = CancelRetakeEnrollmentUseCase(studentRepository)
+        val createCommentUseCase = CreateCommentUseCase(studentRepository)
         val teacherRepository = TeacherRepositoryImpl()
         val loginUseCase = LoginUseCase(authRepository)
         val getTeacherRetakesUseCase = GetTeacherRetakesUseCase(teacherRepository)
@@ -69,6 +81,11 @@ class MainActivity : ComponentActivity() {
             deleteRetakeUseCase = deleteRetakeUseCase,
             redactRetakeUseCase = redactRetakeUseCase,
             getAllCommentsUseCase = getAllCommentsUseCase,
+            getStudentDebtsUseCase = getStudentDebtsUseCase,
+            getStudentDebtRankUseCase = getStudentDebtRankUseCase,
+            enrollToRetakeUseCase = enrollToRetakeUseCase,
+            cancelRetakeEnrollmentUseCase = cancelRetakeEnrollmentUseCase,
+            createCommentUseCase = createCommentUseCase,
         )
         setContent {
             AccountingOfStudentRetakesAppTheme {

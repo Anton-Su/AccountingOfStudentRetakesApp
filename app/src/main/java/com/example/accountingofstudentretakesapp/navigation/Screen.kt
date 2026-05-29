@@ -16,6 +16,7 @@ import com.example.accountingofstudentretakesapp.presentation.ui.screen.AdminCom
 import com.example.accountingofstudentretakesapp.presentation.ui.screen.LoginScreen
 import com.example.accountingofstudentretakesapp.presentation.model.UserRole
 import com.example.accountingofstudentretakesapp.presentation.ui.screen.StudentHomeScreen
+import com.example.accountingofstudentretakesapp.presentation.ui.screen.StudentCommentScreen
 import com.example.accountingofstudentretakesapp.presentation.ui.screen.TeacherHomeScreen
 import com.example.accountingofstudentretakesapp.presentation.ui.screen.TeacherRetakeDetailsScreen
 import com.example.accountingofstudentretakesapp.presentation.viewmodel.RetakeViewModel
@@ -25,6 +26,9 @@ import androidx.compose.runtime.collectAsState
 sealed class Screen(val route: String) {
     data object LoginScreen : Screen("login")
     data object StudentAllScreen : Screen("student_all_screen")
+    data object StudentCommentScreen : Screen("student_comment/{retakeId}") {
+        fun createRoute(retakeId: Long) = "student_comment/$retakeId"
+    }
     data object TeacherAllScreen : Screen("teacher_all_screen")
     data object AdminAllScreen : Screen("admin_all_screen")
     data object AdminCreateRetakeScreen : Screen("admin_create_retake")
@@ -62,15 +66,75 @@ fun Navigation(
             LoginScreen(viewModel = viewModel)
         }
         composable(Screen.StudentAllScreen.route) {
-            StudentHomeScreen(onLogout = {
-                viewModel.logout()
-                navController.navigate(Screen.LoginScreen.route) {
-                    popUpTo(navController.graph.findStartDestination().id) {
-                        inclusive = true
+            val uiState = viewModel.uiState.collectAsState().value
+            StudentHomeScreen(
+                uiState = uiState,
+                onLoadStudentData = { studentId ->
+                    viewModel.loadStudentDebts(studentId)
+                    viewModel.loadStudentDebtRank(studentId)
+                },
+                onRetakeClick = { retakeId ->
+                    navController.navigate(Screen.StudentCommentScreen.createRoute(retakeId))
+                },
+                onEnrollRetake = { debtId ->
+                    uiState.loggedInUser?.id?.let { studentId ->
+                        viewModel.enrollToRetake(
+                            studentId = studentId,
+                            debtId = debtId,
+                            retakeId = debtId,
+                            onSuccess = {},
+                            onError = { _ -> }
+                        )
                     }
-                    launchSingleTop = true
+                },
+                onCancelRetake = { debtId ->
+                    uiState.loggedInUser?.id?.let { studentId ->
+                        viewModel.cancelRetakeEnrollment(
+                            studentId = studentId,
+                            debtId = debtId,
+                            retakeId = debtId,
+                            onSuccess = {},
+                            onError = {}
+                        )
+                    }
+                },
+                onLogout = {
+                    viewModel.logout()
+                    navController.navigate(Screen.LoginScreen.route) {
+                        popUpTo(navController.graph.findStartDestination().id) {
+                            inclusive = true
+                        }
+                        launchSingleTop = true
+                    }
                 }
-            })
+            )
+        }
+
+        composable(
+            Screen.StudentCommentScreen.route,
+            arguments = listOf(navArgument("retakeId") { type = NavType.LongType })
+        ) { backStackEntry ->
+            val retakeId = backStackEntry.arguments?.getLong("retakeId") ?: return@composable
+            val uiState = viewModel.uiState.collectAsState().value
+            StudentCommentScreen(
+                retakeId = retakeId,
+                uiState = uiState,
+                onSubmit = { gradeplace, gradeteacher, gradeoverall, comment ->
+                    uiState.loggedInUser?.id?.let { studentId ->
+                        viewModel.createComment(
+                            studentId = studentId,
+                            gradeplace = gradeplace,
+                            gradeteacher = gradeteacher,
+                            gradeoverall = gradeoverall,
+                            comment = comment,
+                            retakeId = retakeId,
+                            onSuccess = { navController.popBackStack() },
+                            onError = {}
+                        )
+                    }
+                },
+                onBack = { navController.popBackStack() }
+            )
         }
         composable(Screen.TeacherAllScreen.route) {
             TeacherHomeScreen(
@@ -99,7 +163,7 @@ fun Navigation(
             TeacherRetakeDetailsScreen(
                 retakeId = retakeId,
                 uiState = viewModel.uiState.collectAsState().value,
-                onLoadRetakeDetails = { viewModel.loadTeacherRetakeDetails(it) },
+                onLoadRetakeDetails = { retakeId -> viewModel.loadTeacherRetakeDetails(retakeId) },
                 onGradeStudent = { retakeId, studentId, score ->
                     viewModel.gradeStudent(retakeId, studentId, score)
                 },
@@ -125,7 +189,7 @@ fun Navigation(
                         onSuccess = {
                             navController.popBackStack()
                         },
-                        onError = { error ->
+                        onError = { _ ->
                             // Обработка ошибки
                         }
                     )
@@ -172,7 +236,7 @@ fun Navigation(
                         onSuccess = {
                             navController.popBackStack()
                         },
-                        onError = { error ->
+                        onError = { _ ->
                             // Обработка ошибки
                         }
                     )
@@ -208,7 +272,7 @@ fun Navigation(
                         onSuccess = {
                             navController.popBackStack()
                         },
-                        onError = { error ->
+                        onError = { _ ->
                             // Обработка ошибки
                         }
                     )
@@ -218,26 +282,5 @@ fun Navigation(
                 }
             )
         }
-
-//        composable(Screen.PhotoListScreen.route) {
-//            AllScreen(navHostController = navController, viewModel = viewModel)
-//        }
-//        composable(Screen.FavouriteScreen.route) {
-//            FavouriteScreen(navHostController = navController, viewModel = viewModel)
-//        }
-//        composable(Screen.ProfileScreen.route) {
-//            ProfileScreen(navHostController = navController, viewModel = viewModel)
-//        }
-//        composable(
-//            Screen.PhotoDetailScreen.route,
-//            arguments = listOf(navArgument("itemId") { type = NavType.IntType })
-//        ) { backStackEntry ->
-//            val itemId = backStackEntry.arguments?.getInt("itemId")
-//            val prizes = viewModel.laureates.collectAsState().value
-//            val item = itemId?.let { id -> prizes.find { it.id.hashCode() == id } }
-//            if (item != null) {
-//                DetailScreen(navHostController = navController, viewModel = viewModel, item = item)
-//            }
-//        }
     }
 }
