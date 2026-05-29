@@ -23,6 +23,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.example.accountingofstudentretakesapp.presentation.ui.component.formatIsoDateTimeToHuman
 import com.example.accountingofstudentretakesapp.presentation.ui.component.StudentGradeCard
 import com.example.accountingofstudentretakesapp.presentation.viewmodel.RetakeUiState
 
@@ -93,12 +94,12 @@ fun TeacherRetakeDetailsScreen(
                                 modifier = Modifier.padding(bottom = 8.dp)
                             )
                             Text(
-                                text = "Время начала: ${retake.startAt}",
+                                text = "Время начала: ${formatIsoDateTimeToHuman(retake.startAt)}",
                                 style = MaterialTheme.typography.bodyMedium,
                                 modifier = Modifier.padding(bottom = 8.dp)
                             )
                             Text(
-                                text = "Время конца: ${retake.endAt}",
+                                text = "Время конца: ${formatIsoDateTimeToHuman(retake.endAt)}",
                                 style = MaterialTheme.typography.bodyMedium,
                                 modifier = Modifier.padding(bottom = 8.dp)
                             )

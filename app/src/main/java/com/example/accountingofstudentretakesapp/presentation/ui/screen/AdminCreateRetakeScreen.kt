@@ -31,6 +31,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.example.accountingofstudentretakesapp.presentation.ui.component.DateTimePickerDialogs
+import com.example.accountingofstudentretakesapp.presentation.ui.component.DateTimePickerField
+import com.example.accountingofstudentretakesapp.presentation.ui.component.RetakeTypeSelector
 import com.example.accountingofstudentretakesapp.presentation.viewmodel.RetakeUiState
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -58,14 +61,12 @@ fun AdminCreateRetakeScreen(
     val selectedSubject = remember { mutableStateOf<Long?>(null) }
     val selectedTeachers = remember { mutableStateListOf<Long>() }
     val expandedSubject = remember { mutableStateOf(false) }
-    val expandedType = remember { mutableStateOf(false) }
     val errorMessage = remember { mutableStateOf<String?>(null) }
-    val retakeTypes = listOf("Экзамен", "Зачёт")
-
+    val showStartDateTimePicker = remember { mutableStateOf(false) }
+    val showEndDateTimePicker = remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
         onLoadSubjects()
     }
-
     fun validateAndSubmit() {
         when {
             type.value.isNullOrEmpty() -> errorMessage.value = "Выберите тип пересдачи"
@@ -138,43 +139,27 @@ fun AdminCreateRetakeScreen(
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.padding(vertical = 8.dp)
                 )
-                Button(
-                    onClick = { expandedType.value = true },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(type.value ?: "Выберите тип пересдачи")
-                }
-                DropdownMenu(
-                    expanded = expandedType.value,
-                    onDismissRequest = { expandedType.value = false },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    retakeTypes.forEach { retakeType ->
-                        DropdownMenuItem(
-                            text = { Text(retakeType) },
-                            onClick = {
-                                type.value = retakeType
-                                expandedType.value = false
-                            }
-                        )
-                    }
-                }
-            }
-
-            item {
-                OutlinedTextField(
-                    value = startAt.value,
-                    onValueChange = { startAt.value = it },
-                    label = { Text("Время начала (ISO 8601, например: 2024-05-29T10:00:00)") },
+                RetakeTypeSelector(
+                    selectedType = type.value,
+                    onTypeSelected = { type.value = it },
                     modifier = Modifier.fillMaxWidth()
                 )
             }
 
             item {
-                OutlinedTextField(
+                DateTimePickerField(
+                    value = startAt.value,
+                    label = "Время начала",
+                    onDateTimePickerClick = { showStartDateTimePicker.value = true },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
+            item {
+                DateTimePickerField(
                     value = endAt.value,
-                    onValueChange = { endAt.value = it },
-                    label = { Text("Время окончания (ISO 8601)") },
+                    label = "Время окончания",
+                    onDateTimePickerClick = { showEndDateTimePicker.value = true },
                     modifier = Modifier.fillMaxWidth()
                 )
             }
@@ -296,6 +281,18 @@ fun AdminCreateRetakeScreen(
             }
         }
     }
+
+
+    // Диалоги выбора даты и времени
+    DateTimePickerDialogs(
+        showDatePicker = showStartDateTimePicker,
+        onDateTimeSelected = { startAt.value = it }
+    )
+
+    DateTimePickerDialogs(
+        showDatePicker = showEndDateTimePicker,
+        onDateTimeSelected = { endAt.value = it }
+    )
 }
 
 

@@ -28,6 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.clickable
+import com.example.accountingofstudentretakesapp.presentation.ui.component.formatIsoDateTimeToHuman
 import androidx.compose.ui.unit.dp
 import com.example.accountingofstudentretakesapp.presentation.viewmodel.RetakeUiState
 
@@ -123,11 +124,10 @@ fun TeacherHomeScreen(
 										style = MaterialTheme.typography.bodyMedium
 									)
 									Text(
-										text = "Начало: ${retake.startAt}",
+										text = "Начало: ${formatIsoDateTimeToHuman(retake.startAt)}",
 										style = MaterialTheme.typography.bodyMedium
 									)
-									Text(
-										text = "Окончание: ${retake.endAt}",
+									Text(text = "Окончание: ${formatIsoDateTimeToHuman(retake.endAt)}",
 										style = MaterialTheme.typography.bodyMedium
 									)
 								}
