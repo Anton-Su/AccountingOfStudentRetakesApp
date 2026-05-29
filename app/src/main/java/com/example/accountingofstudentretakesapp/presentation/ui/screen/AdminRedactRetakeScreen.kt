@@ -229,10 +229,13 @@ fun AdminRedactRetakeScreen(
                                     modifier = Modifier.fillMaxWidth(),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Text(
-                                        text = "ID: ${teacher.userId}",
-                                        modifier = Modifier.weight(1f)
-                                    )
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(text = teacher.fullName)
+                                        Text(
+                                            text = "Дисциплины: ${teacher.disciplines.joinToString(", ")}",
+                                            style = MaterialTheme.typography.bodySmall
+                                        )
+                                    }
                                     Checkbox(
                                         checked = selectedTeachers.contains(teacher.userId),
                                         onCheckedChange = { checked ->

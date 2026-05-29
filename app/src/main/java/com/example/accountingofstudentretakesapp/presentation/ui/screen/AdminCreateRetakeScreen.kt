@@ -232,11 +232,13 @@ fun AdminCreateRetakeScreen(
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
-                                    Text(
-                                        text = "ID: ${teacher.userId}, Дисциплины: ${teacher.disciplines.joinToString(", ")}",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        modifier = Modifier.weight(1f)
-                                    )
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(text = teacher.fullName)
+                                        Text(
+                                            text = "Дисциплины: ${teacher.disciplines.joinToString(", ")}",
+                                            style = MaterialTheme.typography.bodySmall
+                                        )
+                                    }
                                     Checkbox(
                                         checked = selectedTeachers.contains(teacher.userId),
                                         onCheckedChange = { checked ->
