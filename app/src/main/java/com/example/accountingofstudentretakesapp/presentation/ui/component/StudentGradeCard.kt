@@ -1,6 +1,7 @@
 package com.example.accountingofstudentretakesapp.presentation.ui.component
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -60,25 +61,26 @@ fun StudentGradeCard(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Button(
-                    onClick = { setExpandedDropdown(!expandedDropdown) },
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text(selectedGrade?.toString() ?: "Выбрать оценку")
-                }
-                DropdownMenu(
-                    expanded = expandedDropdown,
-                    onDismissRequest = { setExpandedDropdown(false) },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    availableGrades.forEach { grade ->
-                        DropdownMenuItem(
-                            text = { Text(grade.toString()) },
-                            onClick = {
-                                setSelectedGrade(grade)
-                                setExpandedDropdown(false)
-                            }
-                        )
+                Box(modifier = Modifier.weight(1f)) {
+                    Button(
+                        onClick = { setExpandedDropdown(!expandedDropdown) },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(selectedGrade?.toString() ?: "Выбрать оценку")
+                    }
+                    DropdownMenu(
+                        expanded = expandedDropdown,
+                        onDismissRequest = { setExpandedDropdown(false) }
+                    ) {
+                        availableGrades.forEach { grade ->
+                            DropdownMenuItem(
+                                text = { Text(grade.toString()) },
+                                onClick = {
+                                    setSelectedGrade(grade)
+                                    setExpandedDropdown(false)
+                                }
+                            )
+                        }
                     }
                 }
                 Button(

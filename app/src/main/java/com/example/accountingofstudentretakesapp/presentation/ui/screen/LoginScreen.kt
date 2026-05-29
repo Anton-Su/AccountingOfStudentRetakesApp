@@ -34,8 +34,8 @@ import com.example.accountingofstudentretakesapp.presentation.viewmodel.RetakeVi
 
 @Composable
 fun LoginScreen(viewModel: RetakeViewModel) {
-    var email by remember { mutableStateOf("petrov.m.i@edu.mirea.ru") }
-    var password by remember { mutableStateOf("Student123!") }
+    var email by remember { mutableStateOf("kuznetsova.i.a@edu.mirea.ru") }
+    var password by remember { mutableStateOf("Teacher123!") }
     var role by remember { mutableStateOf(UserRole.STUDENT) }
     val uiState by viewModel.uiState.collectAsState()
     Column(
