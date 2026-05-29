@@ -126,23 +126,7 @@ class RetakeViewModel(
                 return@launch
             }
             val currentUser = getCurrentUserUseCase()
-            if (currentUser == null) {
-                authRepository.logout()
-                settingsDataStore.clearUserData()
-                _uiState.update {
-                    it.copy(isLoading = false, errorMessage = "Не удалось получить профиль пользователя")
-                }
-                return@launch
-            }
-            if (currentUser.role != selectedRole) {
-                authRepository.logout()
-                settingsDataStore.clearUserData()
-                _uiState.update {
-                    it.copy(isLoading = false, errorMessage = "Роль пользователя не совпадает с выбранной ролью")
-                }
-                return@launch
-            }
-            settingsDataStore.saveUserProfile(currentUser)
+            settingsDataStore.saveUserProfile(currentUser!!)
             _uiState.update {
                 it.copy(
                     isLoading = false,
@@ -286,7 +270,6 @@ class RetakeViewModel(
                     subjectsError = null
                 )
             }
-
             runCatching { getSubjectsUseCase() }
                 .onSuccess { subjects ->
                     _uiState.update {
@@ -316,7 +299,6 @@ class RetakeViewModel(
                     teachersByDisciplineError = null
                 )
             }
-
             runCatching { getTeachersByDisciplineUseCase(discipline) }
                 .onSuccess { teachers ->
                     _uiState.update {
@@ -346,7 +328,6 @@ class RetakeViewModel(
                     allCommentsError = null
                 )
             }
-
             runCatching { getAllCommentsUseCase() }
                 .onSuccess { comments ->
                     _uiState.update {
@@ -376,7 +357,6 @@ class RetakeViewModel(
                     studentDebtsError = null
                 )
             }
-
             runCatching { getStudentDebtsUseCase(studentId) }
                 .onSuccess { debts ->
                     _uiState.update {
@@ -524,20 +504,16 @@ class RetakeViewModel(
             }
             runCatching {
                 createRetakeUseCase(
-                    startAt = startAt,
-                    endAt = endAt,
-                    teacherIds = teacherIds,
-                    subjectId = subjectId,
-                    type = type,
-                    place = place,
+                    startAt = startAt, endAt = endAt,
+                    teacherIds = teacherIds, subjectId = subjectId,
+                    type = type, place = place,
                     admission = admission
                 )
             }
                 .onSuccess { _ ->
                     _uiState.update {
                         it.copy(
-                            createRetakeLoading = false,
-                            createRetakeError = null
+                            createRetakeLoading = false, createRetakeError = null
                         )
                     }
                     loadAllRetakes()
@@ -568,7 +544,6 @@ class RetakeViewModel(
                     deleteRetakeError = null
                 )
             }
-
             runCatching { deleteRetakeUseCase(retakeId) }
                 .onSuccess { _ ->
                     _uiState.update {
@@ -612,7 +587,6 @@ class RetakeViewModel(
                     redactRetakeError = null
                 )
             }
-
             runCatching {
                 redactRetakeUseCase(
                     id = retakeId,

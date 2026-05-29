@@ -42,7 +42,7 @@ import kotlinx.serialization.json.Json
 
 object KtorClient {
     private var currentAccessToken: String? = null
-    private val client = HttpClient(OkHttp) {
+    private fun buildClient() = HttpClient(OkHttp) {
         install(ContentNegotiation) {
             json(Json {
                 ignoreUnknownKeys = true
@@ -71,6 +71,17 @@ object KtorClient {
             }
         }
 
+    }
+    private var client = buildClient()
+
+    fun updateAccessToken(token: String?) {
+        currentAccessToken = token
+        client = buildClient()
+    }
+
+    fun clearTokens() {
+        currentAccessToken = null
+        client = buildClient()
     }
 
     suspend fun login(email: String, password: String, role: UserRole): LoginResponseDto {
@@ -168,7 +179,6 @@ object KtorClient {
         }.body()
     }
 
-    // Teacher endpoints
     suspend fun getTeacherRetakes(): List<RetakeDetailDto> {
         return client.get("http://10.0.2.2:8080/api/teacher/retakes") {
             contentType(ContentType.Application.Json)
@@ -186,14 +196,6 @@ object KtorClient {
             contentType(ContentType.Application.Json)
             setBody(request)
         }.body()
-    }
-
-    fun updateAccessToken(token: String?) {
-        currentAccessToken = token
-    }
-
-    fun clearTokens() {
-        currentAccessToken = null
     }
 }
 
