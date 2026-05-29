@@ -12,7 +12,6 @@ import androidx.navigation.NavType
 import com.example.accountingofstudentretakesapp.presentation.ui.screen.AdminCreateRetakeScreen
 import com.example.accountingofstudentretakesapp.presentation.ui.screen.AdminHomeScreen
 import com.example.accountingofstudentretakesapp.presentation.ui.screen.AdminRedactRetakeScreen
-import com.example.accountingofstudentretakesapp.presentation.ui.screen.AdminCommentsScreen
 import com.example.accountingofstudentretakesapp.presentation.ui.screen.LoginScreen
 import com.example.accountingofstudentretakesapp.presentation.model.UserRole
 import com.example.accountingofstudentretakesapp.presentation.ui.screen.StudentHomeScreen
@@ -35,7 +34,6 @@ sealed class Screen(val route: String) {
     data object AdminRedactRetakeScreen : Screen("admin_redact_retake/{retakeId}") {
         fun createRoute(retakeId: Long) = "admin_redact_retake/$retakeId"
     }
-    data object AdminCommentsScreen : Screen("admin_comments")
     data object TeacherRetakeDetailsScreen : Screen("teacher_retake_details/{retakeId}") {
         fun createRoute(retakeId: Long) = "teacher_retake_details/$retakeId"
     }
@@ -177,6 +175,7 @@ fun Navigation(
             AdminHomeScreen(
                 uiState = viewModel.uiState.collectAsState().value,
                 onLoadRetakes = { viewModel.loadAllRetakes() },
+                onLoadComments = { viewModel.loadAllComments() },
                 onAddRetake = {
                     navController.navigate(Screen.AdminCreateRetakeScreen.route)
                 },
@@ -202,18 +201,7 @@ fun Navigation(
                         }
                         launchSingleTop = true
                     }
-                },
-                onComments = {
-                    navController.navigate(Screen.AdminCommentsScreen.route)
                 }
-            )
-        }
-
-        composable(Screen.AdminCommentsScreen.route) {
-            AdminCommentsScreen(
-                uiState = viewModel.uiState.collectAsState().value,
-                onLoadComments = { viewModel.loadAllComments() },
-                onBack = { navController.popBackStack() }
             )
         }
 

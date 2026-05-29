@@ -34,6 +34,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.ui.unit.dp
 import com.example.accountingofstudentretakesapp.presentation.ui.component.formatIsoDateTimeToHuman
+import com.example.accountingofstudentretakesapp.presentation.ui.component.RetakeCommentsCard
 import com.example.accountingofstudentretakesapp.presentation.viewmodel.RetakeUiState
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -41,14 +42,15 @@ import com.example.accountingofstudentretakesapp.presentation.viewmodel.RetakeUi
 fun AdminHomeScreen(
     uiState: RetakeUiState,
     onLoadRetakes: () -> Unit,
+    onLoadComments: () -> Unit,
     onAddRetake: () -> Unit,
     onEditRetake: (Long) -> Unit,
     onDeleteRetake: (Long) -> Unit,
-    onLogout: () -> Unit,
-    onComments: () -> Unit
+    onLogout: () -> Unit
 ) {
     LaunchedEffect(Unit) {
         onLoadRetakes()
+        onLoadComments()
     }
     val context = LocalContext.current
     val settings = SettingsDataStore(context)
@@ -126,73 +128,72 @@ fun AdminHomeScreen(
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         items(uiState.allRetakes) { retake ->
-                            Card(
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Column(modifier = Modifier.padding(12.dp)) {
-                                    Row(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(bottom = 8.dp),
-                                        horizontalArrangement = Arrangement.SpaceBetween,
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Column(modifier = Modifier.weight(1f)) {
-                                            Text(
-                                                text = retake.type,
-                                                style = MaterialTheme.typography.titleMedium
-                                            )
-                                            Text(
-                                                text = "Место: ${retake.place}",
-                                                style = MaterialTheme.typography.bodySmall
-                                            )
-                                            Text(
-                                                text = "Начало: ${formatIsoDateTimeToHuman(retake.startAt)}",
-                                                style = MaterialTheme.typography.bodySmall
-                                            )
-                                            Text(
-                                                text = "Окончание: ${formatIsoDateTimeToHuman(retake.endAt)}",
-                                                style = MaterialTheme.typography.bodySmall
-                                            )
-                                        }
+                            Column {
+                                Card(
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Column(modifier = Modifier.padding(12.dp)) {
                                         Row(
-                                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(bottom = 8.dp),
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically
                                         ) {
-                                            IconButton(
-                                                onClick = { onEditRetake(retake.id) },
-                                                modifier = Modifier.padding(0.dp)
-                                            ) {
-                                                Icon(
-                                                    Icons.Default.Edit,
-                                                    contentDescription = "Редактировать",
-                                                    tint = MaterialTheme.colorScheme.primary
+                                            Column(modifier = Modifier.weight(1f)) {
+                                                Text(
+                                                    text = retake.type,
+                                                    style = MaterialTheme.typography.titleMedium
+                                                )
+                                                Text(
+                                                    text = "Место: ${retake.place}",
+                                                    style = MaterialTheme.typography.bodySmall
+                                                )
+                                                Text(
+                                                    text = "Начало: ${formatIsoDateTimeToHuman(retake.startAt)}",
+                                                    style = MaterialTheme.typography.bodySmall
+                                                )
+                                                Text(
+                                                    text = "Окончание: ${formatIsoDateTimeToHuman(retake.endAt)}",
+                                                    style = MaterialTheme.typography.bodySmall
                                                 )
                                             }
-                                            IconButton(
-                                                onClick = { onDeleteRetake(retake.id) },
-                                                modifier = Modifier.padding(0.dp)
+                                            Row(
+                                                horizontalArrangement = Arrangement.spacedBy(4.dp)
                                             ) {
-                                                Icon(
-                                                    Icons.Default.Delete,
-                                                    contentDescription = "Удалить",
-                                                    tint = MaterialTheme.colorScheme.error
-                                                )
+                                                IconButton(
+                                                    onClick = { onEditRetake(retake.id) },
+                                                    modifier = Modifier.padding(0.dp)
+                                                ) {
+                                                    Icon(
+                                                        Icons.Default.Edit,
+                                                        contentDescription = "Редактировать",
+                                                        tint = MaterialTheme.colorScheme.primary
+                                                    )
+                                                }
+                                                IconButton(
+                                                    onClick = { onDeleteRetake(retake.id) },
+                                                    modifier = Modifier.padding(0.dp)
+                                                ) {
+                                                    Icon(
+                                                        Icons.Default.Delete,
+                                                        contentDescription = "Удалить",
+                                                        tint = MaterialTheme.colorScheme.error
+                                                    )
+                                                }
                                             }
                                         }
                                     }
                                 }
+                                RetakeCommentsCard(
+                                    retakeId = retake.id,
+                                    comments = uiState.allComments,
+                                    modifier = Modifier.padding(horizontal = 0.dp)
+                                )
                             }
                         }
                     }
                 }
-            }
-            Button(
-                onClick = onComments,
-                modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
-                    .padding(top = 12.dp)
-            ) {
-                Text("Комментарии")
             }
         }
     }
