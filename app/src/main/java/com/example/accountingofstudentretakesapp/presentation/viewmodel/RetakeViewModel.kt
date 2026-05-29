@@ -489,7 +489,17 @@ class RetakeViewModel(
             _uiState.update { it.copy(enrollRetakeLoading = true, enrollRetakeError = null) }
             runCatching { enrollToRetakeUseCase(studentId, debtId, retakeId) }
                 .onSuccess {
-                    _uiState.update { it.copy(enrollRetakeLoading = false, enrollRetakeError = null) }
+                    _uiState.update { currentState ->
+                        val retake = currentState.availableRetakes.find { it.id == retakeId }
+                        val newAvailable = currentState.availableRetakes.filter { it.id != retakeId }
+                        val newEnrolled = if (retake != null) currentState.enrolledRetakes + retake else currentState.enrolledRetakes
+                        currentState.copy(
+                            availableRetakes = newAvailable,
+                            enrolledRetakes = newEnrolled,
+                            enrollRetakeLoading = false,
+                            enrollRetakeError = null
+                        )
+                    }
                     onSuccess()
                 }
                 .onFailure { error ->
@@ -511,7 +521,17 @@ class RetakeViewModel(
             _uiState.update { it.copy(cancelRetakeLoading = true, cancelRetakeError = null) }
             runCatching { cancelRetakeEnrollmentUseCase(studentId, debtId, retakeId) }
                 .onSuccess {
-                    _uiState.update { it.copy(cancelRetakeLoading = false, cancelRetakeError = null) }
+                    _uiState.update { currentState ->
+                        val retake = currentState.enrolledRetakes.find { it.id == retakeId }
+                        val newEnrolled = currentState.enrolledRetakes.filter { it.id != retakeId }
+                        val newAvailable = if (retake != null) currentState.availableRetakes + retake else currentState.availableRetakes
+                        currentState.copy(
+                            enrolledRetakes = newEnrolled,
+                            availableRetakes = newAvailable,
+                            cancelRetakeLoading = false,
+                            cancelRetakeError = null
+                        )
+                    }
                     onSuccess()
                 }
                 .onFailure { error ->

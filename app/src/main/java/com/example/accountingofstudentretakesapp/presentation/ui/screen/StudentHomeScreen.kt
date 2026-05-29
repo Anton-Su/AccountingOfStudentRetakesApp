@@ -1,12 +1,15 @@
 package com.example.accountingofstudentretakesapp.presentation.ui.screen
 
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -15,6 +18,7 @@ import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -32,6 +36,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.accountingofstudentretakesapp.data.remote.SettingsDataStore
+import com.example.accountingofstudentretakesapp.presentation.ui.component.CircularPercentageIndicator
 import com.example.accountingofstudentretakesapp.presentation.ui.component.formatIsoDateTimeToHuman
 import com.example.accountingofstudentretakesapp.presentation.viewmodel.RetakeUiState
 
@@ -90,25 +95,37 @@ fun StudentHomeScreen(
             item {
                 uiState.studentDebtRank?.let { rank ->
                     Card(modifier = Modifier.fillMaxWidth()) {
-                        Column(modifier = Modifier.padding(12.dp)) {
-                            Text(
-                                text = "У вас ${rank.debtsCount} долгов",
-                                style = MaterialTheme.typography.titleMedium
-                            )
-                            Text(
-                                text = "Вы входите в топ ${rank.topPercent}%",
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                            Text(
-                                text = "Место среди студентов: ${rank.place} из ${rank.totalStudents}",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = "Занимаемое место в топе:",
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Text(
+                                        text = "${rank.place} из ${rank.totalStudents}",
+                                        style = MaterialTheme.typography.titleLarge,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                                CircularPercentageIndicator(
+                                    percentage = rank.topPercent,
+                                    size = 100.dp,
+                                    strokeWidth = 5.dp,
+                                    progressColor = MaterialTheme.colorScheme.primary
+                                )
+                            }
                         }
                     }
                 }
             }
-
             item {
                 Text("Долги", style = MaterialTheme.typography.titleMedium)
             }
@@ -128,9 +145,18 @@ fun StudentHomeScreen(
                 }
                 else -> {
                     items(uiState.studentDebts, key = { "debt-${it.id}" }) { debt ->
-                        Card(modifier = Modifier.fillMaxWidth()) {
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.errorContainer
+                            )
+                        ) {
                             Column(modifier = Modifier.padding(12.dp)) {
-                                Text(debt.subjectTitle, style = MaterialTheme.typography.titleMedium)
+                                Text(
+                                    debt.subjectTitle,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = MaterialTheme.colorScheme.error
+                                )
                             }
                         }
                     }
@@ -167,9 +193,13 @@ fun StudentHomeScreen(
                                         Column(modifier = Modifier.weight(1f)) {
                                             Text(matchingDebt.subjectTitle, style = MaterialTheme.typography.titleMedium)
                                             Text(retake.place, style = MaterialTheme.typography.bodySmall)
-                                            Text(retake.startAt, style = MaterialTheme.typography.bodySmall)
+                                            Text(formatIsoDateTimeToHuman(retake.startAt), style = MaterialTheme.typography.bodySmall)
+                                            Text(formatIsoDateTimeToHuman(retake.endAt), style = MaterialTheme.typography.bodySmall)
+                                            Text("Тип: ${retake.type}", style = MaterialTheme.typography.bodySmall)
+                                            Text("Допуск: ${retake.admission ?: "нет"}", style = MaterialTheme.typography.bodySmall)
                                         }
-                                        IconButton(onClick = { onEnrollRetake(matchingDebt.id, retake.id) }) {
+
+                                        IconButton(onClick = { onEnrollRetake(matchingDebt.subjectId, retake.id) }) {
                                             Icon(Icons.Filled.Add, contentDescription = "Записаться на пересдачу")
                                         }
                                     }
@@ -219,7 +249,7 @@ fun StudentHomeScreen(
                                             Text("Тип: ${retake.type}", style = MaterialTheme.typography.bodyMedium)
                                             Text("Допуск: ${retake.admission ?: "нет"}", style = MaterialTheme.typography.bodyMedium)
                                         }
-                                        IconButton(onClick = { onCancelRetake(matchingDebt.id, retake.id) }) {
+                                        IconButton(onClick = { onCancelRetake(matchingDebt.subjectId, retake.id) }) {
                                             Icon(Icons.Filled.Close, contentDescription = "Отменить запись")
                                         }
                                     }
