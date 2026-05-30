@@ -9,12 +9,3 @@ data class StudentDebtDto(
     val subjectId: Long,
     val subjectTitle: String,
 )
-
-
-fun StudentDebt.toDto(): StudentDebtDto {
-    return StudentDebtDto(
-        id = this.id,
-        subjectId = this.subjectId,
-        subjectTitle = this.subjectTitle,
-    )
-}

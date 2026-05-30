@@ -19,8 +19,6 @@ class TokenManager(private val context: Context) {
         context.tokenDataStore.edit { it[ACCESS_TOKEN] = token }
     }
 
-    val accessTokenFlow: Flow<String?> = context.tokenDataStore.data.map { it[ACCESS_TOKEN] }
-
     suspend fun clearTokens() {
         context.tokenDataStore.edit { it.clear() }
     }

@@ -12,12 +12,3 @@ data class RetakeEnrollmentDto(
     val studentFullName: String,
     val groupName: String
 )
-
-fun RetakeEnrollment.toEnrollmentDto(): RetakeEnrollmentDto = RetakeEnrollmentDto(
-    id = this.id,
-    retakeId = this.retakeId,
-    studentId = this.studentId,
-    studentSubjectId = this.studentSubjectId,
-    studentFullName = this.studentFullName,
-    groupName = this.groupName
-)

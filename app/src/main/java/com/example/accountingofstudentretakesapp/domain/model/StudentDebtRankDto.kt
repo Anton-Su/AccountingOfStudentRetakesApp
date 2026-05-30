@@ -12,12 +12,3 @@ data class StudentDebtRankDto(
     val totalStudents: Int,
     val topPercent: Int
 )
-
-
-fun StudentDebtRank.toDto() = StudentDebtRankDto(
-    studentId = studentId,
-    debtsCount = debtsCount,
-    place = place,
-    totalStudents = totalStudents,
-    topPercent = topPercent
-)

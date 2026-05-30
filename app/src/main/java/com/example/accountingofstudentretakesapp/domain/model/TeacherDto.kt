@@ -11,6 +11,3 @@ data class TeacherDto(
 
 )
 
-
-fun Teacher.toTeacherDto() = TeacherDto(userId = this.userId, fullName = this.fullName, disciplines = this.disciplines)
-

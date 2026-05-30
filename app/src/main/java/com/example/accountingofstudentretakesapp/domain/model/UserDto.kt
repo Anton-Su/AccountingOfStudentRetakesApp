@@ -15,15 +15,3 @@ data class UserDto(
     val age: Int,
     val email: String,
 )
-
-
-fun User.toUserDto(): UserDto = UserDto(
-    id = this.id,
-    role = this.role,
-    firstName = this.firstName,
-    secondName = this.secondName,
-    lastName = this.lastName,
-    gender = this.gender,
-    age = this.age,
-    email = this.email,
-)

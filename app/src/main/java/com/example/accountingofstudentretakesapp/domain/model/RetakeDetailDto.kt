@@ -15,14 +15,3 @@ data class RetakeDetailDto(
     val subjectId: Long,
     val admission: String? = null,
 )
-
-//fun Retake.toRetakeDetailDto(): RetakeDetailDto = RetakeDetailDto(
-//    id = this.id,
-//    type = this.type,
-//    place = this.place,
-//    startAt = this.startAt.toString(),
-//    endAt = this.endAt.toString(),
-//    lastModified = this.lastModified.toString(),
-//    teacherIds = this.teacherIds,
-//    admission = this.admission,
-//)

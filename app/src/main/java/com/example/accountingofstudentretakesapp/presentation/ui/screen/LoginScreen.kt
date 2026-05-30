@@ -111,7 +111,7 @@ var password by remember { mutableStateOf("Admin123!") }
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
-            text = "Нашли ошибку в системе? Напишите разработчику на почту @develplover@mail.ru. Он, возможно, прочитает. Возможно...",
+            text = "Нашли ошибку в системе? Напишите разработчику на почту develplover@mail.ru. Он, возможно, прочитает. Возможно...",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onErrorContainer
         )
