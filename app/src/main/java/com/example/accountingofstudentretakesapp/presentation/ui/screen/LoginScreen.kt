@@ -34,10 +34,17 @@ import com.example.accountingofstudentretakesapp.presentation.viewmodel.RetakeVi
 
 @Composable
 fun LoginScreen(viewModel: RetakeViewModel) {
-    var email by remember { mutableStateOf("volkov.a.s@edu.mirea.ru") }
-    var password by remember { mutableStateOf("Admin123!") }
-    var role by remember { mutableStateOf(UserRole.ADMIN) }
+  //  var email by remember { mutableStateOf("petrov.m.i@edu.mirea.ru") }
+   // var password by remember { mutableStateOf("Student123!") }
+    //var role by remember { mutableStateOf(UserRole.STUDENT) }
+ // var email by remember { mutableStateOf("kuznetsova.i.a@edu.mirea.ru") }
+  //  var password by remember { mutableStateOf("Teacher123!") }
+  //  var role by remember { mutableStateOf(UserRole.TEACHER) }
+var email by remember { mutableStateOf("volkov.a.s@edu.mirea.ru") }
+var password by remember { mutableStateOf("Admin123!") }
+ var role by remember { mutableStateOf(UserRole.ADMIN) }
     val uiState by viewModel.uiState.collectAsState()
+    val isLoginEnabled = !uiState.isLoading && email.isNotBlank() && password.isNotBlank()
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -92,7 +99,7 @@ fun LoginScreen(viewModel: RetakeViewModel) {
                 viewModel.login(email, password, role)
             },
             modifier = Modifier.fillMaxWidth(),
-            enabled = !uiState.isLoading
+            enabled = isLoginEnabled
         ) {
             Text(if (uiState.isLoading) "Вход..." else "Войти")
         }
